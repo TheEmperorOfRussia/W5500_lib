@@ -503,7 +503,8 @@ uint8_t W5500_Get_Sn_CR(uint8_t socket_num, W5500_User_Funcs* UF)
 uint8_t W5500_Get_Sn_SR(uint8_t socket_num, W5500_User_Funcs* UF)
 {
     uint8_t status;
-    uint8_t result = W5500_ReadRegister(W5500_Sn_SR, W5500_SOCKET_BASE(socket_num), &status, 1, UF);
+    uint8_t result                 = W5500_ReadRegister(W5500_Sn_SR, W5500_SOCKET_BASE(socket_num), &status, 1, UF);
+    UF->sockets[socket_num].status = status;
     if (result != 0)
         return result;  // Ошибка
     return status;
@@ -513,9 +514,10 @@ uint8_t W5500_Get_Sn_SR(uint8_t socket_num, W5500_User_Funcs* UF)
 uint8_t W5500_Get_Sn_IR(uint8_t socket_num, W5500_User_Funcs* UF)
 {
     uint8_t interrupt;
-    uint8_t result = W5500_ReadRegister(W5500_Sn_IR, W5500_SOCKET_BASE(socket_num), &interrupt, 1, UF);
+    uint8_t result                         = W5500_ReadRegister(W5500_Sn_IR, W5500_SOCKET_BASE(socket_num), &interrupt, 1, UF);
+    UF->sockets[socket_num].last_interrupt = interrupt;
     if (result != 0)
-        return result;  // Ошибка
+        return 0xFF;  // Ошибка
     return interrupt;
 }
 
@@ -609,7 +611,8 @@ uint8_t W5500_Get_Sn_TXBUF_SIZE(uint8_t socket_num, W5500_User_Funcs* UF)
 uint16_t W5500_Get_Sn_TX_RD(uint8_t socket_num, W5500_User_Funcs* UF)
 {
     uint8_t data[2];
-    uint8_t result = W5500_ReadRegister(W5500_Sn_TX_RD, W5500_SOCKET_BASE(socket_num), data, 2, UF);
+    uint8_t result                  = W5500_ReadRegister(W5500_Sn_TX_RD, W5500_SOCKET_BASE(socket_num), data, 2, UF);
+    UF->sockets[socket_num].tx_rd_p = (data[0] << 8) | data[1];
     if (result != 0)
         return result;  // Ошибка
     return (data[0] << 8) | data[1];
@@ -619,7 +622,8 @@ uint16_t W5500_Get_Sn_TX_RD(uint8_t socket_num, W5500_User_Funcs* UF)
 uint16_t W5500_Get_Sn_TX_WR(uint8_t socket_num, W5500_User_Funcs* UF)
 {
     uint8_t data[2];
-    uint8_t result = W5500_ReadRegister(W5500_Sn_TX_WR, W5500_SOCKET_BASE(socket_num), data, 2, UF);
+    uint8_t result                  = W5500_ReadRegister(W5500_Sn_TX_WR, W5500_SOCKET_BASE(socket_num), data, 2, UF);
+    UF->sockets[socket_num].tx_wr_p = (data[0] << 8) | data[1];
     if (result != 0)
         return result;  // Ошибка
     return (data[0] << 8) | data[1];
@@ -639,7 +643,8 @@ uint16_t W5500_Get_Sn_RX_RSR(uint8_t socket_num, W5500_User_Funcs* UF)
 uint16_t W5500_Get_Sn_RX_RD(uint8_t socket_num, W5500_User_Funcs* UF)
 {
     uint8_t data[2];
-    uint8_t result = W5500_ReadRegister(W5500_Sn_RX_RD, W5500_SOCKET_BASE(socket_num), data, 2, UF);
+    uint8_t result                  = W5500_ReadRegister(W5500_Sn_RX_RD, W5500_SOCKET_BASE(socket_num), data, 2, UF);
+    UF->sockets[socket_num].rx_rd_p = (data[0] << 8) | data[1];
     if (result != 0)
         return result;  // Ошибка
     return (data[0] << 8) | data[1];
@@ -649,7 +654,8 @@ uint16_t W5500_Get_Sn_RX_RD(uint8_t socket_num, W5500_User_Funcs* UF)
 uint16_t W5500_Get_Sn_RX_WR(uint8_t socket_num, W5500_User_Funcs* UF)
 {
     uint8_t data[2];
-    uint8_t result = W5500_ReadRegister(W5500_Sn_RX_WR, W5500_SOCKET_BASE(socket_num), data, 2, UF);
+    uint8_t result                  = W5500_ReadRegister(W5500_Sn_RX_WR, W5500_SOCKET_BASE(socket_num), data, 2, UF);
+    UF->sockets[socket_num].rx_wr_p = (data[0] << 8) | data[1];
     if (result != 0)
         return result;  // Ошибка
     return (data[0] << 8) | data[1];
@@ -1017,7 +1023,7 @@ uint8_t W5500_SendData(
         }
         MS->UF->Delay(200);
     }
-    return 1;  // Неудачная отправка
+    return 2;  // Неудачная отправка
 }
 
 // Отправка данных с обработчиками прерываний
