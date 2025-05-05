@@ -28,7 +28,7 @@
 #define W5500_SIMR     0x0018  // Socket interrupt mask         (1 байт)
 #define W5500_RTR      0x0019  // Retry Time                    (2 байта)
 #define W5500_RCR      0x001B  // Retry count                   (1 байт)
-#define W5500_PTIMER   0x001C  // PPP LCP Request Timer        (1 байт)
+#define W5500_PTIMER   0x001C  // PPP LCP Request Timer        	(1 байт)
 #define W5500_PMAGIC   0x001D  // PPP LCP magic number          (1 байт)
 #define W5500_PHAR     0x001E  // PPP Destination MAC Address   (6 байт)
 #define W5500_PSID     0x0024  // PPP Session Identification    (2 байта)
@@ -205,7 +205,7 @@ uint8_t W5500_Set_PHYCFGR(uint8_t phy_config, W5500_User_Funcs* UF);
 
 // ======= Common Register READ ===============================================================
 // Чтение Mode Register (MR)
-uint8_t W5500_Get_MR(W5500_User_Funcs* UF);
+uint8_t W5500_Get_MR(uint8_t* mode, W5500_User_Funcs* UF);
 // Чтение Gateway Address Register (GAR)
 uint8_t W5500_Get_Gateway(uint8_t* gateway_address, W5500_User_Funcs* UF);
 // Чтение Subnet Mask Register (SUBR)
@@ -215,37 +215,37 @@ uint8_t W5500_Get_MAC(uint8_t* mac_address, W5500_User_Funcs* UF);
 // Чтение Source IP Address Register (SIPR)
 uint8_t W5500_Get_IP(uint8_t* ip_address, W5500_User_Funcs* UF);
 // Чтение Interrupt Low Level Timer (INTLEVEL)
-uint16_t W5500_Get_INTLEVEL(W5500_User_Funcs* UF);
+uint8_t W5500_Get_INTLEVEL(uint16_t* INTLEVEL, W5500_User_Funcs* UF);
 // Чтение Interrupt (IR)
-uint8_t W5500_Get_IR(W5500_User_Funcs* UF);
+uint8_t W5500_Get_IR(uint8_t* IR, W5500_User_Funcs* UF);
 // Чтение Interrupt Mask (IMR)
-uint8_t W5500_Get_IMR(W5500_User_Funcs* UF);
+uint8_t W5500_Get_IMR(uint8_t* IMR, W5500_User_Funcs* UF);
 // Чтение Socket Interrupt (SIR)
-uint8_t W5500_Get_SIR(W5500_User_Funcs* UF);
+uint8_t W5500_Get_SIR(uint8_t* SIR, W5500_User_Funcs* UF);
 // Чтение Socket Interrupt Mask (SIMR)
-uint8_t W5500_Get_SIMR(W5500_User_Funcs* UF);
+uint8_t W5500_Get_SIMR(uint8_t* SIMR, W5500_User_Funcs* UF);
 // Чтение Retry Time (RTR)
-uint16_t W5500_Get_RTR(W5500_User_Funcs* UF);
+uint8_t W5500_Get_RTR(uint16_t* RTR, W5500_User_Funcs* UF);
 // Чтение Retry Count (RCR)
-uint8_t W5500_Get_RCR(W5500_User_Funcs* UF);
+uint8_t W5500_Get_RCR(uint8_t* RCR, W5500_User_Funcs* UF);
 // Чтение PPP LCP Request Timer (PTIMER)
-uint8_t W5500_Get_PTIMER(W5500_User_Funcs* UF);
+uint8_t W5500_Get_PTIMER(uint8_t* PTIMER, W5500_User_Funcs* UF);
 // Чтение PPP LCP Magic Number (PMAGIC)
-uint8_t W5500_Get_PMAGIC(W5500_User_Funcs* UF);
+uint8_t W5500_Get_PMAGIC(uint8_t* PMAGIC, W5500_User_Funcs* UF);
 // Чтение PPP Destination MAC Address (PHAR)
 uint8_t W5500_Get_PHAR(uint8_t* ppp_mac_address, W5500_User_Funcs* UF);
 // Чтение PPP Session Identification (PSID)
-uint16_t W5500_Get_PSID(W5500_User_Funcs* UF);
+uint8_t W5500_Get_PSID(uint16_t* PSID, W5500_User_Funcs* UF);
 // Чтение PPP Maximum Segment Size (PMRU)
-uint16_t W5500_Get_PMRU(W5500_User_Funcs* UF);
+uint8_t W5500_Get_PMRU(uint16_t* PMRU, W5500_User_Funcs* UF);
 // Чтение Unreachable IP Address (UIPR)
 uint8_t W5500_Get_UIPR(uint8_t* unreachable_ip, W5500_User_Funcs* UF);
 // Чтение Unreachable Port (UPORTR)
-uint16_t W5500_Get_UPORTR(W5500_User_Funcs* UF);
+uint8_t W5500_Get_UPORTR(uint8_t* UPORTR, W5500_User_Funcs* UF);
 // Чтение PHY Configuration (PHYCFGR)
-uint8_t W5500_Get_PHYCFGR(W5500_User_Funcs* UF);
+uint8_t W5500_Get_PHYCFGR(uint8_t* PHYCFGR, W5500_User_Funcs* UF);
 // Чтение Chip Version (ChipVers)
-uint8_t W5500_Get_ChipVersion(W5500_User_Funcs* UF);
+uint8_t W5500_Get_ChipVersion(uint8_t* ChipVersion, W5500_User_Funcs* UF);
 
 // %%%%======= Socket Register INIT =======%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // Запись Socket Mode Register (Sn_MR)
@@ -289,49 +289,49 @@ uint8_t W5500_Set_Sn_KPALVTR(uint8_t socket_num, uint8_t keep_alive_timer, W5500
 
 // ======= Socket Register READ ==============================================================
 // Чтение Socket Mode Register (Sn_MR)
-uint8_t W5500_Get_Sn_MR(uint8_t socket_num, W5500_User_Funcs* UF);
+uint8_t W5500_Get_Sn_MR(uint8_t* MR, uint8_t socket_num, W5500_User_Funcs* UF);
 // Чтение Socket Command Register (Sn_CR)
-uint8_t W5500_Get_Sn_CR(uint8_t socket_num, W5500_User_Funcs* UF);
+uint8_t W5500_Get_Sn_CR(uint8_t* CR, uint8_t socket_num, W5500_User_Funcs* UF);
 // Чтение Socket Status Register (Sn_SR)
-uint8_t W5500_Get_Sn_SR(uint8_t socket_num, W5500_User_Funcs* UF);
+uint8_t W5500_Get_Sn_SR(uint8_t* SR, uint8_t socket_num, W5500_User_Funcs* UF);
 // Чтение Socket Interrupt Register (Sn_IR)
-uint8_t W5500_Get_Sn_IR(uint8_t socket_num, W5500_User_Funcs* UF);
+uint8_t W5500_Get_Sn_IR(uint8_t* IR, uint8_t socket_num, W5500_User_Funcs* UF);
 // Чтение Socket Source Port Register (Sn_PORT)
-uint16_t W5500_Get_Sn_PORT(uint8_t socket_num, W5500_User_Funcs* UF);
+uint8_t W5500_Get_Sn_PORT(uint16_t* PORT, uint8_t socket_num, W5500_User_Funcs* UF);
 // Чтение Socket Destination Hardware Address Register (Sn_DHAR)
-void W5500_Get_Sn_DHAR(uint8_t socket_num, uint8_t* dest_mac_address, W5500_User_Funcs* UF);
+uint8_t W5500_Get_Sn_DHAR(uint8_t socket_num, uint8_t* dest_mac_address, W5500_User_Funcs* UF);
 // Чтение Socket Destination IP Address Register (Sn_DIPR)
-void W5500_Get_Sn_DIPR(uint8_t socket_num, uint8_t* dest_ip_address, W5500_User_Funcs* UF);
+uint8_t W5500_Get_Sn_DIPR(uint8_t socket_num, uint8_t* dest_ip_address, W5500_User_Funcs* UF);
 // Чтение Socket Destination Port Register (Sn_DPORT)
-uint16_t W5500_Get_Sn_DPORT(uint8_t socket_num, W5500_User_Funcs* UF);
+uint8_t W5500_Get_Sn_DPORT(uint16_t* DPORT, uint8_t socket_num, W5500_User_Funcs* UF);
 // Чтение Socket Maximum Segment Size Register (Sn_MSSR)
-uint16_t W5500_Get_Sn_MSSR(uint8_t socket_num, W5500_User_Funcs* UF);
+uint8_t W5500_Get_Sn_MSSR(uint16_t* MSSR, uint8_t socket_num, W5500_User_Funcs* UF);
 // Чтение Socket Transmit Free Size Register (Sn_TX_FSR)
-uint16_t W5500_Get_Sn_TX_FSR(uint8_t socket_num, W5500_User_Funcs* UF);
+uint8_t W5500_Get_Sn_TX_FSR(uint16_t* FSR, uint8_t socket_num, W5500_User_Funcs* UF);
 // Чтение Socket IP Type of Service Register (Sn_TOS)
-uint8_t W5500_Get_Sn_TOS(uint8_t socket_num, W5500_User_Funcs* UF);
+uint8_t W5500_Get_Sn_TOS(uint8_t* TOS, uint8_t socket_num, W5500_User_Funcs* UF);
 // Чтение Socket IP Time to Live Register (Sn_TTL)
-uint8_t W5500_Get_Sn_TOS(uint8_t socket_num, W5500_User_Funcs* UF);
+uint8_t W5500_Get_Sn_TTL(uint8_t* TTL, uint8_t socket_num, W5500_User_Funcs* UF);
 // Чтение Socket Receive Buffer Size (Sn_RXBUF_SIZE)
-uint8_t W5500_Get_Sn_RXBUF_SIZE(uint8_t socket_num, W5500_User_Funcs* UF);
+uint8_t W5500_Get_Sn_RXBUF_SIZE(uint8_t* RX_SIZE, uint8_t socket_num, W5500_User_Funcs* UF);
 // Чтение Socket Transmit Buffer Size (Sn_TXBUF_SIZE)
-uint8_t W5500_Get_Sn_TXBUF_SIZE(uint8_t socket_num, W5500_User_Funcs* UF);
+uint8_t W5500_Get_Sn_TXBUF_SIZE(uint8_t* TX_SIZE, uint8_t socket_num, W5500_User_Funcs* UF);
 // Чтение Socket Transmit Read Pointer Register (Sn_TX_RD)
-uint16_t W5500_Get_Sn_TX_RD(uint8_t socket_num, W5500_User_Funcs* UF);
+uint8_t W5500_Get_Sn_TX_RD(uint16_t* TX_RD, uint8_t socket_num, W5500_User_Funcs* UF);
 // Чтение Socket Transmit Write Pointer Register (Sn_TX_WR)
-uint16_t W5500_Get_Sn_TX_WR(uint8_t socket_num, W5500_User_Funcs* UF);
+uint8_t W5500_Get_Sn_TX_WR(uint16_t* TX_WR, uint8_t socket_num, W5500_User_Funcs* UF);
 // Чтение Socket Receive Received Size Register (Sn_RX_RSR)
-uint16_t W5500_Get_Sn_RX_RSR(uint8_t socket_num, W5500_User_Funcs* UF);
+uint8_t W5500_Get_Sn_RX_RSR(uint16_t* RX_RSR, uint8_t socket_num, W5500_User_Funcs* UF);
 // Чтение Socket Receive Read Pointer Register (Sn_RX_RD)  ЛУЧШЕ НЕ ТРОГАТЬ
-uint16_t W5500_Get_Sn_RX_RD(uint8_t socket_num, W5500_User_Funcs* UF);
+uint8_t W5500_Get_Sn_RX_RD(uint16_t* RX_RD, uint8_t socket_num, W5500_User_Funcs* UF);
 // Чтение Socket Receive Write Pointer Register (Sn_RX_WR) ЛУЧШЕ НЕ ТРОГАТЬ
-uint16_t W5500_Get_Sn_RX_WR(uint8_t socket_num, W5500_User_Funcs* UF);
+uint8_t W5500_Get_Sn_RX_WR(uint16_t* RX_WR, uint8_t socket_num, W5500_User_Funcs* UF);
 // Чтение Socket Interrupt Mask Register (Sn_IMR)
-uint8_t W5500_Get_Sn_IMR(uint8_t socket_num, W5500_User_Funcs* UF);
+uint8_t W5500_Get_Sn_IMR(uint8_t* IMR, uint8_t socket_num, W5500_User_Funcs* UF);
 // Чтение Socket Fragment Offset in IP Header Register (Sn_FRAG)
-uint16_t W5500_Get_Sn_FRAG(uint8_t socket_num, W5500_User_Funcs* UF);
+uint8_t W5500_Get_Sn_FRAG(uint8_t* FRAG, uint8_t socket_num, W5500_User_Funcs* UF);
 // Чтение Socket Keep Alive Timer Register (Sn_KPALVTR)
-uint8_t W5500_Get_Sn_KPALVTR(uint8_t socket_num, W5500_User_Funcs* UF);
+uint8_t W5500_Get_Sn_KPALVTR(uint8_t* KPALVTR, uint8_t socket_num, W5500_User_Funcs* UF);
 
 // ======= Базовые функции чтения и записи данных ==============================================
 // Запись Socket TXBUF
@@ -391,15 +391,13 @@ uint8_t W5500_TCP_Connect(
 //* func_mode 	  - режим выполнения записи IP, порта и закрытие сокета
 //* W5500_write_ip - перезаписать ip адрес в сокете
 //* W5500_write_port - перезаписать порт в сокете
-//* W5500_close_open_socket - закрыть и открыть сокет перед отправкой !НЕОБХОДИМО при TCP, или вручную!
 //* W5500_nothing - ничего не делать из вышеперечисленного
-// Если ip и порт уже использовались, советуется не нагружать SPI
+//* Если ip и порт уже использовались, советуется не нагружать SPI
 
 enum W5500_func_mode {
-    W5500_nothing           = 0x0,
-    W5500_write_ip          = 0x1,
-    W5500_write_port        = 0x2,
-    W5500_close_open_socket = 0x4
+    W5500_nothing    = 0x0,
+    W5500_write_ip   = 0x1,
+    W5500_write_port = 0x2,
 };
 
 // Отправка данных без обработчиков прерываний P.S. НЕ РЕКОМЕНДУЕТСЯ
@@ -431,6 +429,7 @@ uint16_t W5500_ReceiveData(
     uint8_t           socket_num,
     uint8_t*          buffer,
     uint16_t          max_len,
+    uint16_t*         buffer_len,
     W5500_User_Funcs* UF);
 
 // Сокет переходит в режим TCP Сервера
