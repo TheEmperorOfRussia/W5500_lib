@@ -241,7 +241,7 @@ uint8_t W5500_Get_PMRU(uint16_t* PMRU, W5500_User_Funcs* UF);
 // Чтение Unreachable IP Address (UIPR)
 uint8_t W5500_Get_UIPR(uint8_t* unreachable_ip, W5500_User_Funcs* UF);
 // Чтение Unreachable Port (UPORTR)
-uint8_t W5500_Get_UPORTR(uint8_t* UPORTR, W5500_User_Funcs* UF);
+uint8_t W5500_Get_UPORTR(uint16_t* UPORTR, W5500_User_Funcs* UF);
 // Чтение PHY Configuration (PHYCFGR)
 uint8_t W5500_Get_PHYCFGR(uint8_t* PHYCFGR, W5500_User_Funcs* UF);
 // Чтение Chip Version (ChipVers)
@@ -329,7 +329,7 @@ uint8_t W5500_Get_Sn_RX_WR(uint16_t* RX_WR, uint8_t socket_num, W5500_User_Funcs
 // Чтение Socket Interrupt Mask Register (Sn_IMR)
 uint8_t W5500_Get_Sn_IMR(uint8_t* IMR, uint8_t socket_num, W5500_User_Funcs* UF);
 // Чтение Socket Fragment Offset in IP Header Register (Sn_FRAG)
-uint8_t W5500_Get_Sn_FRAG(uint8_t* FRAG, uint8_t socket_num, W5500_User_Funcs* UF);
+uint8_t W5500_Get_Sn_FRAG(uint16_t* FRAG, uint8_t socket_num, W5500_User_Funcs* UF);
 // Чтение Socket Keep Alive Timer Register (Sn_KPALVTR)
 uint8_t W5500_Get_Sn_KPALVTR(uint8_t* KPALVTR, uint8_t socket_num, W5500_User_Funcs* UF);
 
@@ -434,7 +434,7 @@ uint16_t W5500_ReceiveData(
 
 // Сокет переходит в режим TCP Сервера
 //* Для выхода из режима закрйоте сокет
-void W5500_TCP_Listen(
+uint8_t W5500_TCP_Listen(
     uint8_t            socket_num,
     W5500_Main_Struct* MS);
 
