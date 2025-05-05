@@ -503,7 +503,8 @@ uint8_t W5500_Get_Sn_CR(uint8_t socket_num, W5500_User_Funcs* UF)
 uint8_t W5500_Get_Sn_SR(uint8_t socket_num, W5500_User_Funcs* UF)
 {
     uint8_t status;
-    uint8_t result = W5500_ReadRegister(W5500_Sn_SR, W5500_SOCKET_BASE(socket_num), &status, 1, UF);
+    uint8_t result                 = W5500_ReadRegister(W5500_Sn_SR, W5500_SOCKET_BASE(socket_num), &status, 1, UF);
+    UF->sockets[socket_num].status = status;
     if (result != 0)
         return result;  // Ошибка
     return status;
@@ -513,9 +514,10 @@ uint8_t W5500_Get_Sn_SR(uint8_t socket_num, W5500_User_Funcs* UF)
 uint8_t W5500_Get_Sn_IR(uint8_t socket_num, W5500_User_Funcs* UF)
 {
     uint8_t interrupt;
-    uint8_t result = W5500_ReadRegister(W5500_Sn_IR, W5500_SOCKET_BASE(socket_num), &interrupt, 1, UF);
+    uint8_t result                         = W5500_ReadRegister(W5500_Sn_IR, W5500_SOCKET_BASE(socket_num), &interrupt, 1, UF);
+    UF->sockets[socket_num].last_interrupt = interrupt;
     if (result != 0)
-        return result;  // Ошибка
+        return 0xFF;  // Ошибка
     return interrupt;
 }
 
@@ -609,7 +611,8 @@ uint8_t W5500_Get_Sn_TXBUF_SIZE(uint8_t socket_num, W5500_User_Funcs* UF)
 uint16_t W5500_Get_Sn_TX_RD(uint8_t socket_num, W5500_User_Funcs* UF)
 {
     uint8_t data[2];
-    uint8_t result = W5500_ReadRegister(W5500_Sn_TX_RD, W5500_SOCKET_BASE(socket_num), data, 2, UF);
+    uint8_t result                  = W5500_ReadRegister(W5500_Sn_TX_RD, W5500_SOCKET_BASE(socket_num), data, 2, UF);
+    UF->sockets[socket_num].tx_rd_p = (data[0] << 8) | data[1];
     if (result != 0)
         return result;  // Ошибка
     return (data[0] << 8) | data[1];
@@ -619,7 +622,8 @@ uint16_t W5500_Get_Sn_TX_RD(uint8_t socket_num, W5500_User_Funcs* UF)
 uint16_t W5500_Get_Sn_TX_WR(uint8_t socket_num, W5500_User_Funcs* UF)
 {
     uint8_t data[2];
-    uint8_t result = W5500_ReadRegister(W5500_Sn_TX_WR, W5500_SOCKET_BASE(socket_num), data, 2, UF);
+    uint8_t result                  = W5500_ReadRegister(W5500_Sn_TX_WR, W5500_SOCKET_BASE(socket_num), data, 2, UF);
+    UF->sockets[socket_num].tx_wr_p = (data[0] << 8) | data[1];
     if (result != 0)
         return result;  // Ошибка
     return (data[0] << 8) | data[1];
@@ -639,7 +643,8 @@ uint16_t W5500_Get_Sn_RX_RSR(uint8_t socket_num, W5500_User_Funcs* UF)
 uint16_t W5500_Get_Sn_RX_RD(uint8_t socket_num, W5500_User_Funcs* UF)
 {
     uint8_t data[2];
-    uint8_t result = W5500_ReadRegister(W5500_Sn_RX_RD, W5500_SOCKET_BASE(socket_num), data, 2, UF);
+    uint8_t result                  = W5500_ReadRegister(W5500_Sn_RX_RD, W5500_SOCKET_BASE(socket_num), data, 2, UF);
+    UF->sockets[socket_num].rx_rd_p = (data[0] << 8) | data[1];
     if (result != 0)
         return result;  // Ошибка
     return (data[0] << 8) | data[1];
@@ -649,7 +654,8 @@ uint16_t W5500_Get_Sn_RX_RD(uint8_t socket_num, W5500_User_Funcs* UF)
 uint16_t W5500_Get_Sn_RX_WR(uint8_t socket_num, W5500_User_Funcs* UF)
 {
     uint8_t data[2];
-    uint8_t result = W5500_ReadRegister(W5500_Sn_RX_WR, W5500_SOCKET_BASE(socket_num), data, 2, UF);
+    uint8_t result                  = W5500_ReadRegister(W5500_Sn_RX_WR, W5500_SOCKET_BASE(socket_num), data, 2, UF);
+    UF->sockets[socket_num].rx_wr_p = (data[0] << 8) | data[1];
     if (result != 0)
         return result;  // Ошибка
     return (data[0] << 8) | data[1];
@@ -733,7 +739,7 @@ uint8_t W5500_QuickInit_Common(
         return 5;
 
     // Настройка PHY Configuration (автоматическое согласование скорости)
-    if (W5500_Set_PHYCFGR(0b10111111, MS->UF) != 0)
+    if (W5500_Set_PHYCFGR(W5500_PHY_standart_init, MS->UF) != 0)
         return 6;
 
     return 0;  // Успешная инициализация
@@ -741,54 +747,44 @@ uint8_t W5500_QuickInit_Common(
 
 // Установка UDP сокета
 uint8_t W5500_QuickInit_UDP(
-    uint8_t            socket_num,
-    uint16_t           src_port,
-    uint16_t           tx_b_s,            // tx_buf_size
-    uint16_t           rx_b_s,            // rx_buf_size
-    uint8_t            keep_alive_timer,  // * 5s
-    W5500_Main_Struct* MS)
+    uint8_t             socket_num,
+    uint16_t            src_port,
+    enum W5500_buf_size tx_b_s,
+    enum W5500_buf_size rx_b_s,
+    uint8_t             keep_alive_timer,  // * 5s
+    W5500_Main_Struct*  MS)
 {
-    // Проверка: tx_b_s = 0 ИЛИ tx_b_s степень двойки и меньше 16
-    if (!(tx_b_s == 0 || (((tx_b_s & (tx_b_s - 1)) == 0) && tx_b_s < 0x10))) {
-        return 1;  // неверный размер tx буфера
-    }
-
-    // Проверка: rx_b_s = 0 ИЛИ rx_b_s степень двойки и меньше 16
-    if (!(rx_b_s == 0 || (((rx_b_s & (rx_b_s - 1)) == 0) && rx_b_s < 0x10))) {
-        return 2;  // неверный размер rx буфера
-    }
-
     // Установка режима сокета в UDP
     if (W5500_Set_Sn_MR(socket_num, 0x02, MS->UF) != 0)
-        return 3;
+        return 1;
 
     // Установка исходного порта
     if (W5500_Set_Sn_PORT(socket_num, src_port, MS->UF) != 0)
-        return 4;
+        return 2;
 
     // Установка размера TX буфера
     if (W5500_Set_Sn_TXBUF_SIZE(socket_num, tx_b_s, MS->UF) != 0)
-        return 5;
+        return 3;
 
     // Установка размера RX буфера
     if (W5500_Set_Sn_RXBUF_SIZE(socket_num, rx_b_s, MS->UF) != 0)
-        return 6;
+        return 4;
 
     // Установка указателя TX_RD в 0
     if (W5500_Set_Sn_TX_RD(socket_num, 0, MS->UF) != 0)
-        return 7;
+        return 5;
 
     // Установка указателя TX_WR в 0
     if (W5500_Set_Sn_TX_WR(socket_num, 0, MS->UF) != 0)
-        return 8;
+        return 6;
 
     // Установка указателя RX_RD в 0
     if (W5500_Set_Sn_RX_RD(socket_num, 0, MS->UF) != 0)
-        return 9;
+        return 7;
 
     // Установка указателя RX_WR в 0
     if (W5500_Set_Sn_RX_WR(socket_num, 0, MS->UF) != 0)
-        return 10;
+        return 8;
 
     // Установка масок прерывания
     W5500_Set_SIMR(0x1 << socket_num, MS->UF);
@@ -797,7 +793,7 @@ uint8_t W5500_QuickInit_UDP(
 
     // Открытие сокета
     if (W5500_Set_Sn_CR(socket_num, 0x01, MS->UF) != 0)
-        return 11;
+        return 9;
 
     MS->UF->sockets[socket_num].num              = socket_num;
     MS->UF->sockets[socket_num].mode             = 0x2;
@@ -822,63 +818,52 @@ uint8_t W5500_QuickInit_UDP(
         MS->UF->Delay(100);
     }
 
-    return 12;  // Ошибка инициализации
+    return 10;  // Ошибка инициализации
 }
 
 // Установка TCP сокета
 uint8_t W5500_QuickInit_TCP(
-    uint8_t            socket_num,
-    uint16_t           src_port,
-    uint16_t           tx_b_s,            // tx_buf_size
-    uint16_t           rx_b_s,            // rx_buf_size
-    uint8_t            keep_alive_timer,  // * 5s
-    W5500_Main_Struct* MS)
+    uint8_t             socket_num,
+    uint16_t            src_port,
+    enum W5500_buf_size tx_b_s,
+    enum W5500_buf_size rx_b_s,
+    uint8_t             keep_alive_timer,  // * 5s
+    W5500_Main_Struct*  MS)
 {
-
-    // Проверка: tx_b_s = 0 ИЛИ tx_b_s степень двойки и меньше 16
-    if (!(tx_b_s == 0 || (((tx_b_s & (tx_b_s - 1)) == 0) && tx_b_s < 0x10))) {
-        return 1;  // неверный размер tx буфера
-    }
-
-    // Проверка: rx_b_s = 0 ИЛИ rx_b_s степень двойки и меньше 16
-    if (!(rx_b_s == 0 || (((rx_b_s & (rx_b_s - 1)) == 0) && rx_b_s < 0x10))) {
-        return 2;  // неверный размер rx буфера
-    }
-
     // Установка режима сокета в TCP
     if (W5500_Set_Sn_MR(socket_num, 0x01, MS->UF) != 0)
-        return 3;
+        return 1;
 
     // Установка исходного порта
     if (W5500_Set_Sn_PORT(socket_num, src_port, MS->UF) != 0)
-        return 4;
+        return 2;
 
     // Установка времени "пинга"
     if (W5500_Set_Sn_KPALVTR(socket_num, keep_alive_timer, MS->UF) != 0)
-        return 5;
+        return 3;
 
     // Установка размера TX буфера
     if (W5500_Set_Sn_TXBUF_SIZE(socket_num, tx_b_s, MS->UF) != 0)
-        return 6;
+        return 4;
 
     // Установка размера RX буфера
     if (W5500_Set_Sn_RXBUF_SIZE(socket_num, rx_b_s, MS->UF) != 0)
-        return 7;
+        return 5;
 
     // Установка указателя RX_RD в 0
     if (W5500_Set_Sn_RX_RD(socket_num, 0, MS->UF) != 0)
-        return 8;
+        return 6;
 
     // Установка указателя RX_WR в 0
     if (W5500_Set_Sn_RX_WR(socket_num, 0, MS->UF) != 0)
-        return 9;
+        return 7;
 
     W5500_Set_SIMR(0x1 << socket_num, MS->UF);
     W5500_Set_Sn_IMR(socket_num, 0x1F, MS->UF);
 
     // Открытие сокета
     if (W5500_Set_Sn_CR(socket_num, 0x01, MS->UF) != 0)
-        return 10;
+        return 8;
 
     MS->UF->sockets[socket_num].num              = socket_num;
     MS->UF->sockets[socket_num].mode             = 0x1;
@@ -903,7 +888,7 @@ uint8_t W5500_QuickInit_TCP(
         MS->UF->Delay(100);
     }
 
-    return 11;  // Успешная инициализация
+    return 9;  // Успешная инициализация
 }
 
 // TCP подключение
@@ -945,13 +930,13 @@ uint8_t W5500_TCP_Connect(
 
 // Отправка данных без обработчиков прерываний
 uint8_t W5500_SendData(
-    uint8_t            socket_num,
-    uint8_t            func_mode,
-    const uint8_t*     dest_ip,
-    uint16_t           dest_port,
-    const uint8_t*     data,
-    uint16_t           len,
-    W5500_Main_Struct* MS)
+    uint8_t              socket_num,
+    enum W5500_func_mode func_mode,
+    const uint8_t*       dest_ip,
+    uint16_t             dest_port,
+    const uint8_t*       data,
+    uint16_t             len,
+    W5500_Main_Struct*   MS)
 {
     if (func_mode & 0x1) {
         // Устанавливаем IP получателя
@@ -1017,7 +1002,7 @@ uint8_t W5500_SendData(
         }
         MS->UF->Delay(200);
     }
-    return 1;  // Неудачная отправка
+    return 2;  // Неудачная отправка
 }
 
 // Отправка данных с обработчиками прерываний
@@ -1199,37 +1184,37 @@ void W5500_IR_processing(
 {
     uint8_t IR_byte = W5500_Get_SIR(MS->UF);
     for (uint8_t i = 0; i < 8; i++) {
-        if ((0x1 << i) & IR_byte) {
-            uint8_t IR = W5500_Get_Sn_IR(i, MS->UF);
-            // sockets[i].last_interrupt = IR;
-            if ((IR & CON) && MS->UCb->Callback_Con != NULL) {
-                MS->UCb->Callback_Con(&MS->UF->sockets[i], MS->UF);
-                W5500_Set_Sn_IR(i, CON, MS->UF);
-            }
-
-            if ((IR & DISCON) && MS->UCb->Callback_Discon != NULL) {
-                MS->UCb->Callback_Discon(&MS->UF->sockets[i], MS->UF);
-                W5500_Set_Sn_IR(i, DISCON, MS->UF);
-            }
-
-            if ((IR & RECV) && MS->UCb->Callback_Recv != NULL) {
-                MS->UCb->Callback_Recv(buf, size, &MS->UF->sockets[i], MS->UF);
-                W5500_Set_Sn_IR(i, RECV, MS->UF);
-            }
-
-            if ((IR & TIMEOUT) && MS->UCb->Callback_Timeout != NULL) {
-                MS->UCb->Callback_Timeout(&MS->UF->sockets[i], MS->UF);
-                W5500_Set_Sn_IR(i, TIMEOUT, MS->UF);
-            }
-
-            if ((IR & SEND_OK) && MS->UCb->Callback_Send_OK != NULL) {
-                MS->UCb->Callback_Send_OK(&MS->UF->sockets[i], MS->UF);
-                W5500_Set_Sn_IR(i, SEND_OK, MS->UF);
-            }
-            // обнуляем биты прерывания
-            W5500_Set_SIR(IR_byte, MS->UF);
-            W5500_Set_Sn_IR(i, IR, MS->UF);
+        if (!((0x1 << i) & IR_byte))
+            continue;
+        uint8_t IR = W5500_Get_Sn_IR(i, MS->UF);
+        // sockets[i].last_interrupt = IR;
+        if ((IR & W5500_CON) && MS->UCb->Callback_Con != NULL) {
+            MS->UCb->Callback_Con(&MS->UF->sockets[i], MS->UF);
+            W5500_Set_Sn_IR(i, W5500_CON, MS->UF);
         }
+
+        if ((IR & W5500_DISCON) && MS->UCb->Callback_Discon != NULL) {
+            MS->UCb->Callback_Discon(&MS->UF->sockets[i], MS->UF);
+            W5500_Set_Sn_IR(i, W5500_DISCON, MS->UF);
+        }
+
+        if ((IR & W5500_RECV) && MS->UCb->Callback_Recv != NULL) {
+            MS->UCb->Callback_Recv(buf, size, &MS->UF->sockets[i], MS->UF);
+            W5500_Set_Sn_IR(i, W5500_RECV, MS->UF);
+        }
+
+        if ((IR & W5500_TIMEOUT) && MS->UCb->Callback_Timeout != NULL) {
+            MS->UCb->Callback_Timeout(&MS->UF->sockets[i], MS->UF);
+            W5500_Set_Sn_IR(i, W5500_TIMEOUT, MS->UF);
+        }
+
+        if ((IR & W5500_SEND_OK) && MS->UCb->Callback_Send_OK != NULL) {
+            MS->UCb->Callback_Send_OK(&MS->UF->sockets[i], MS->UF);
+            W5500_Set_Sn_IR(i, W5500_SEND_OK, MS->UF);
+        }
+        // обнуляем биты прерывания
+        W5500_Set_SIR(IR_byte, MS->UF);
+        W5500_Set_Sn_IR(i, IR, MS->UF);
     }
 
     return;

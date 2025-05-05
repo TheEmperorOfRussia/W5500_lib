@@ -39,6 +39,8 @@
 // 0x002F - 0x0038 RESERVED
 #define W5500_ChipVers 0x0039  // Chip version                  (1 байт) ИЛИ 0x0038
 
+#define W5500_PHY_standart_init 0xBF  // Стандартная настрйока PHY
+
 // ======= Socket Register Block  W5500 =======
 #define W5500_SOCKET_BASE(socket)  (0x1 + 0x4 * socket)  //(1 + 4 * n)
 #define W5500_SOCKET_TXBUF(socket) (W5500_SOCKET_BASE(socket) + 0x1)
@@ -67,11 +69,11 @@
 #define W5500_Sn_KPALVTR           0x002F  // Socket Keep Alive Timer Register 			(1 байт)
 
 // ======= SN_IR bits W5500 =======
-#define SEND_OK 0x10
-#define TIMEOUT 0x8
-#define RECV    0x4
-#define DISCON  0x2
-#define CON     0x0
+#define W5500_SEND_OK 0x10
+#define W5500_TIMEOUT 0x8
+#define W5500_RECV    0x4
+#define W5500_DISCON  0x2
+#define W5500_CON     0x0
 
 typedef struct
 {
@@ -92,51 +94,51 @@ typedef struct
 } W5500_Socket;
 
 // Тип функции для передачи данных через SPI
-typedef uint8_t (*SPI_Transmit_Func)(const uint8_t* data, uint16_t len);
+typedef uint8_t (*W5500_SPI_Transmit_Func)(const uint8_t* data, uint16_t len);
 
 // Тип функции для приёма данных через SPI
-typedef uint8_t (*SPI_Receive_Func)(uint8_t* buffer, uint16_t len);
+typedef uint8_t (*W5500_SPI_Receive_Func)(uint8_t* buffer, uint16_t len);
 
 // Тип функции для поднятия и опускания CS: 0 - CSs 1 - CSr
-typedef void (*CS_Func)(uint8_t type_operation);
+typedef void (*W5500_CS_Func)(uint8_t type_operation);
 
 // Тип функции для Задержки
-typedef void (*Delay_Func)(uint32_t delay);
+typedef void (*W5500_Delay_Func)(uint32_t delay);
 
 typedef struct
 {
     /////// Функции для работы с данными //////
-    SPI_Transmit_Func Transmit;
-    SPI_Receive_Func  Receive;
-    CS_Func           CS;  // 0-CSs 1-CSr
-    Delay_Func        Delay;
+    W5500_SPI_Transmit_Func Transmit;
+    W5500_SPI_Receive_Func  Receive;
+    W5500_CS_Func           CS;  // 0-CSs 1-CSr
+    W5500_Delay_Func        Delay;
 
     W5500_Socket sockets[8];
 } W5500_User_Funcs;
 
 // Тип функции для обработки прерывания результата команды
-typedef void (*Cb_SEND_OK)(W5500_Socket* socket, W5500_User_Funcs* UF);
+typedef void (*W5500_Cb_SEND_OK)(W5500_Socket* socket, W5500_User_Funcs* UF);
 
 // Тип функции для обработки прерывания TIMEOUT
-typedef void (*Cb_TIMEOUT)(W5500_Socket* socket, W5500_User_Funcs* UF);
+typedef void (*W5500_Cb_TIMEOUT)(W5500_Socket* socket, W5500_User_Funcs* UF);
 
 // Тип функции для обработки прерывания получения данных
-typedef void (*Cb_RECV)(uint8_t* buf, uint8_t size, W5500_Socket* socket, W5500_User_Funcs* UF);
+typedef void (*W5500_Cb_RECV)(uint8_t* buf, uint8_t size, W5500_Socket* socket, W5500_User_Funcs* UF);
 
 // Тип функции для обработки прерывания отключения
-typedef void (*Cb_DISCON)(W5500_Socket* socket, W5500_User_Funcs* UF);
+typedef void (*W5500_Cb_DISCON)(W5500_Socket* socket, W5500_User_Funcs* UF);
 
 // Тип функции для обработки прерывания подключения
-typedef void (*Cb_CON)(W5500_Socket* socket, W5500_User_Funcs* UF);
+typedef void (*W5500_Cb_CON)(W5500_Socket* socket, W5500_User_Funcs* UF);
 
 typedef struct
 {
     /////////////// Callbacks //////
-    Cb_SEND_OK Callback_Send_OK;
-    Cb_TIMEOUT Callback_Timeout;
-    Cb_RECV    Callback_Recv;
-    Cb_DISCON  Callback_Discon;
-    Cb_CON     Callback_Con;
+    W5500_Cb_SEND_OK Callback_Send_OK;
+    W5500_Cb_TIMEOUT Callback_Timeout;
+    W5500_Cb_RECV    Callback_Recv;
+    W5500_Cb_DISCON  Callback_Discon;
+    W5500_Cb_CON     Callback_Con;
 
 } W5500_User_Callbacks;
 
@@ -350,23 +352,31 @@ uint8_t W5500_QuickInit_Common(
     const uint8_t*     gateway_address,
     W5500_Main_Struct* MS);
 
+enum W5500_buf_size {
+    W5500_empty      = 0,
+    W5500_two_kb     = 2,
+    W5500_four_kb    = 4,
+    W5500_eight_kb   = 8,
+    W5500_sixteen_kb = 16
+};
+
 // Установка UDP сокета
 uint8_t W5500_QuickInit_UDP(
-    uint8_t            socket_num,
-    uint16_t           src_port,
-    uint16_t           tx_b_s,            // tx_buf_size
-    uint16_t           rx_b_s,            // rx_buf_size
-    uint8_t            keep_alive_timer,  // * 5s
-    W5500_Main_Struct* MS);
+    uint8_t             socket_num,
+    uint16_t            src_port,
+    enum W5500_buf_size tx_b_s,
+    enum W5500_buf_size rx_b_s,
+    uint8_t             keep_alive_timer,  // * 5s
+    W5500_Main_Struct*  MS);
 
 // Установка TCP сокета
 uint8_t W5500_QuickInit_TCP(
-    uint8_t            socket_num,
-    uint16_t           src_port,
-    uint16_t           tx_b_s,            // tx_buf_size
-    uint16_t           rx_b_s,            // rx_buf_size
-    uint8_t            keep_alive_timer,  // * 5s
-    W5500_Main_Struct* MS);
+    uint8_t             socket_num,
+    uint16_t            src_port,
+    enum W5500_buf_size tx_b_s,
+    enum W5500_buf_size rx_b_s,
+    uint8_t             keep_alive_timer,  // * 5s
+    W5500_Main_Struct*  MS);
 
 // TCP подключение
 uint8_t W5500_TCP_Connect(
@@ -379,33 +389,39 @@ uint8_t W5500_TCP_Connect(
 
 // Отправка данных
 //* func_mode 	  - режим выполнения записи IP, порта и закрытие сокета
-//* Если выставить 1 на место:
-//* 0-й бита 	  - не перезаписывать IP и порт (меньше нагрузка на SPI)
-//* 1-й бита 	  - перезаписать только IP
-//* 2-й бита 	  - перезаписать только порт
-//* 1-й и 2-й бита - перезаписать IP и порт
-//* 4-й бит	  - закрыть сокет до и после отправки, РЕКОМЕНДУЕТСЯ для TCP
+//* W5500_write_ip - перезаписать ip адрес в сокете
+//* W5500_write_port - перезаписать порт в сокете
+//* W5500_close_open_socket - закрыть и открыть сокет перед отправкой !НЕОБХОДИМО при TCP, или вручную!
+//* W5500_nothing - ничего не делать из вышеперечисленного
+// Если ip и порт уже использовались, советуется не нагружать SPI
+
+enum W5500_func_mode {
+    W5500_nothing           = 0x0,
+    W5500_write_ip          = 0x1,
+    W5500_write_port        = 0x2,
+    W5500_close_open_socket = 0x4
+};
 
 // Отправка данных без обработчиков прерываний P.S. НЕ РЕКОМЕНДУЕТСЯ
 uint8_t W5500_SendData(
-    uint8_t            socket_num,
-    uint8_t            func_mode,
-    const uint8_t*     dest_ip,
-    uint16_t           dest_port,
-    const uint8_t*     data,
-    uint16_t           len,
-    W5500_Main_Struct* MS);
+    uint8_t              socket_num,
+    enum W5500_func_mode func_mode,
+    const uint8_t*       dest_ip,
+    uint16_t             dest_port,
+    const uint8_t*       data,
+    uint16_t             len,
+    W5500_Main_Struct*   MS);
 
 // Отправка данных с обработчиками прерываний
 //* func_mode - аналогичен отправке без прерываний
 uint8_t W5500_SendData_IR(
-    uint8_t            socket_num,
-    uint8_t            func_mode,
-    const uint8_t*     dest_ip,
-    uint16_t           dest_port,
-    const uint8_t*     data,
-    uint16_t           len,
-    W5500_Main_Struct* MS);
+    uint8_t              socket_num,
+    enum W5500_func_mode func_mode,
+    const uint8_t*       dest_ip,
+    uint16_t             dest_port,
+    const uint8_t*       data,
+    uint16_t             len,
+    W5500_Main_Struct*   MS);
 
 // Приём данных
 // Если длина буфера < длины данных, то прочитайте
