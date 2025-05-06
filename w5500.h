@@ -388,39 +388,24 @@ uint8_t W5500_TCP_Connect(
 
 //%%%%%%%%%%%%%%%%%%%% Функции для работы с данными %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-// Отправка данных
-//* func_mode 	  - режим выполнения записи IP, порта и закрытие сокета
-//* W5500_write_ip - перезаписать ip адрес в сокете
-//* W5500_write_port - перезаписать порт в сокете
-//* W5500_nothing - ничего не делать из вышеперечисленного
-//* Если ip и порт уже использовались, советуется не нагружать SPI
-
-enum W5500_func_mode {
-    W5500_nothing    = 0x0,
-    W5500_write_ip   = 0x1,
-    W5500_write_port = 0x2,
-};
-
 // Отправка данных без обработчиков прерываний P.S. НЕ РЕКОМЕНДУЕТСЯ
 uint8_t W5500_SendData(
-    uint8_t              socket_num,
-    enum W5500_func_mode func_mode,
-    const uint8_t*       dest_ip,
-    uint16_t             dest_port,
-    const uint8_t*       data,
-    uint16_t             len,
-    W5500_Main_Struct*   MS);
+    uint8_t            socket_num,
+    const uint8_t*     dest_ip,
+    uint16_t           dest_port,
+    const uint8_t*     data,
+    uint16_t           len,
+    W5500_Main_Struct* MS);
 
 // Отправка данных с обработчиками прерываний
 //* func_mode - аналогичен отправке без прерываний
 uint8_t W5500_SendData_IR(
-    uint8_t              socket_num,
-    enum W5500_func_mode func_mode,
-    const uint8_t*       dest_ip,
-    uint16_t             dest_port,
-    const uint8_t*       data,
-    uint16_t             len,
-    W5500_Main_Struct*   MS);
+    uint8_t            socket_num,
+    const uint8_t*     dest_ip,
+    uint16_t           dest_port,
+    const uint8_t*     data,
+    uint16_t           len,
+    W5500_Main_Struct* MS);
 
 // Приём данных
 // Если длина буфера < длины данных, то прочитайте

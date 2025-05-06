@@ -863,21 +863,20 @@ uint8_t W5500_TCP_Connect(
 
 // Отправка данных без обработчиков прерываний
 uint8_t W5500_SendData(
-    uint8_t              socket_num,
-    enum W5500_func_mode func_mode,
-    const uint8_t*       dest_ip,
-    uint16_t             dest_port,
-    const uint8_t*       data,
-    uint16_t             len,
-    W5500_Main_Struct*   MS)
+    uint8_t            socket_num,
+    const uint8_t*     dest_ip,
+    uint16_t           dest_port,
+    const uint8_t*     data,
+    uint16_t           len,
+    W5500_Main_Struct* MS)
 {
-    if (func_mode & W5500_write_ip) {
+    if (memcmp(MS->UF->sockets[socket_num].dipr, dest_ip, 4) != 0) {
         // Устанавливаем IP получателя
         if (W5500_Set_Sn_DIPR(socket_num, dest_ip, MS->UF) != 0)
             return 1;
     }
 
-    if (func_mode & W5500_write_port) {
+    if (MS->UF->sockets[socket_num].dport != dest_port) {
         // Устанавливаем порт получателя
         if (W5500_Set_Sn_DPORT(socket_num, dest_port, MS->UF) != 0)
             return 2;
@@ -921,21 +920,20 @@ uint8_t W5500_SendData(
 
 // Отправка данных с обработчиками прерываний
 uint8_t W5500_SendData_IR(
-    uint8_t              socket_num,
-    enum W5500_func_mode func_mode,
-    const uint8_t*       dest_ip,
-    uint16_t             dest_port,
-    const uint8_t*       data,
-    uint16_t             len,
-    W5500_Main_Struct*   MS)
+    uint8_t            socket_num,
+    const uint8_t*     dest_ip,
+    uint16_t           dest_port,
+    const uint8_t*     data,
+    uint16_t           len,
+    W5500_Main_Struct* MS)
 {
-    if (func_mode & W5500_write_ip) {
+    if (memcmp(MS->UF->sockets[socket_num].dipr, dest_ip, 4) != 0) {
         // Устанавливаем IP получателя
         if (W5500_Set_Sn_DIPR(socket_num, dest_ip, MS->UF) != 0)
             return 1;
     }
 
-    if (func_mode & W5500_write_port) {
+    if (MS->UF->sockets[socket_num].dport != dest_port) {
         // Устанавливаем порт получателя
         if (W5500_Set_Sn_DPORT(socket_num, dest_port, MS->UF) != 0)
             return 2;
