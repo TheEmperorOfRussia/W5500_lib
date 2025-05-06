@@ -256,7 +256,7 @@ uint16_t W5500_ReceiveData(
     uint8_t*              buffer,        // указатель на начало буфера
     uint16_t              max_len,       // длина буфера
     uint16_t*             buffer_len,    // длинна данных в буфере W5500
-    W5500_User_Funcs* UF)                // указатель на объект структуры W5500_Main_Struct
+    W5500_Main_Struct* MS)                // указатель на объект структуры W5500_Main_Struct
 ```
 
 Данная функция принимает данные из сокета
