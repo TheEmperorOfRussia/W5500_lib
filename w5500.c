@@ -7,6 +7,7 @@
 #include "w5500.h"
 #include "stddef.h"
 #include "string.h"
+// 06.05.25
 uint8_t W5500_ReadRegister(
     uint16_t          address,
     uint8_t           bsb,
@@ -963,15 +964,15 @@ uint8_t W5500_SendData_IR(
 
 // Приём данных
 uint16_t W5500_ReceiveData(
-    uint8_t           socket_num,
-    uint8_t*          buffer,
-    uint16_t          max_len,
-    uint16_t*         buffer_len,
-    W5500_User_Funcs* UF)
+    uint8_t            socket_num,
+    uint8_t*           buffer,
+    uint16_t           max_len,
+    uint16_t*          buffer_len,
+    W5500_Main_Struct* MS)
 {
     // Получаем размер доступных данных в буфере приема
     uint16_t rx_rsr;
-    if (W5500_Get_Sn_RX_RSR(&rx_rsr, socket_num, UF) != 0)
+    if (W5500_Get_Sn_RX_RSR(&rx_rsr, socket_num, MS->UF) != 0)
         return 1;
     if (rx_rsr == 0)
         return 2;  // Нет данных для чтения
@@ -981,23 +982,23 @@ uint16_t W5500_ReceiveData(
 
     // Получаем указатель чтения из буфера приема
     uint16_t rx_rd;
-    if (W5500_Get_Sn_RX_RD(&rx_rd, socket_num, UF) != 0)
+    if (W5500_Get_Sn_RX_RD(&rx_rd, socket_num, MS->UF) != 0)
         return 3;
 
     // Читаем данные из буфера приема
-    if (W5500_ReadRegister(rx_rd, W5500_SOCKET_RXBUF(socket_num), buffer, len, UF) != 0)
+    if (W5500_ReadRegister(rx_rd, W5500_SOCKET_RXBUF(socket_num), buffer, len, MS->UF) != 0)
         return 4;
 
     // Обновляем указатель чтения
     rx_rd += len;
-    if (rx_rd > UF->sockets[socket_num].rx_buf_size) {
-        rx_rd -= UF->sockets[socket_num].rx_buf_size;
+    if (rx_rd > MS->UF->sockets[socket_num].rx_buf_size) {
+        rx_rd -= MS->UF->sockets[socket_num].rx_buf_size;
     }
-    if (W5500_Set_Sn_RX_RD(socket_num, rx_rd, UF) != 0)
+    if (W5500_Set_Sn_RX_RD(socket_num, rx_rd, MS->UF) != 0)
         return 5;
 
     // Отправляем команду RECV
-    if (W5500_Set_Sn_CR(socket_num, 0x40, UF) != 0)  // Команда RECV
+    if (W5500_Set_Sn_CR(socket_num, 0x40, MS->UF) != 0)  // Команда RECV
         return 6;
 
     // Запишем прочтённый размер
@@ -1095,23 +1096,23 @@ void W5500_IR_processing(
         W5500_Get_Sn_IR(&IR, i, MS->UF);
         // sockets[i].last_interrupt = IR;
         if ((IR & W5500_CON) && MS->UCb->Callback_Con != NULL) {
-            MS->UCb->Callback_Con(&MS->UF->sockets[i], MS->UF);
+            MS->UCb->Callback_Con(&MS->UF->sockets[i], MS);
         }
 
         if ((IR & W5500_DISCON) && MS->UCb->Callback_Discon != NULL) {
-            MS->UCb->Callback_Discon(&MS->UF->sockets[i], MS->UF);
+            MS->UCb->Callback_Discon(&MS->UF->sockets[i], MS);
         }
 
         if ((IR & W5500_RECV) && MS->UCb->Callback_Recv != NULL) {
-            MS->UCb->Callback_Recv(buf, size, &MS->UF->sockets[i], MS->UF);
+            MS->UCb->Callback_Recv(buf, size, &MS->UF->sockets[i], MS);
         }
 
         if ((IR & W5500_TIMEOUT) && MS->UCb->Callback_Timeout != NULL) {
-            MS->UCb->Callback_Timeout(&MS->UF->sockets[i], MS->UF);
+            MS->UCb->Callback_Timeout(&MS->UF->sockets[i], MS);
         }
 
         if ((IR & W5500_SEND_OK) && MS->UCb->Callback_Send_OK != NULL) {
-            MS->UCb->Callback_Send_OK(&MS->UF->sockets[i], MS->UF);
+            MS->UCb->Callback_Send_OK(&MS->UF->sockets[i], MS);
         }
         // обнуляем биты прерывания
         W5500_Set_SIR(IR_byte, MS->UF);

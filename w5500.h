@@ -9,7 +9,7 @@
 
 #ifndef INC_W5500_H_
 #define INC_W5500_H_
-
+// 06.05.25
 // ======= Определения SPI-команд =======
 #define W5500_READ       0x00  // Флаг для чтения
 #define W5500_WRITE      0x04  // Флаг для записи
@@ -116,20 +116,22 @@ typedef struct
     W5500_Socket sockets[8];
 } W5500_User_Funcs;
 
+typedef struct W5500_Main_Struct W5500_Main_Struct;
+
 // Тип функции для обработки прерывания результата команды
-typedef void (*W5500_Cb_SEND_OK)(W5500_Socket* socket, W5500_User_Funcs* UF);
+typedef void (*W5500_Cb_SEND_OK)(W5500_Socket* socket, W5500_Main_Struct* MS);
 
 // Тип функции для обработки прерывания TIMEOUT
-typedef void (*W5500_Cb_TIMEOUT)(W5500_Socket* socket, W5500_User_Funcs* UF);
+typedef void (*W5500_Cb_TIMEOUT)(W5500_Socket* socket, W5500_Main_Struct* MS);
 
 // Тип функции для обработки прерывания получения данных
-typedef void (*W5500_Cb_RECV)(uint8_t* buf, uint8_t size, W5500_Socket* socket, W5500_User_Funcs* UF);
+typedef void (*W5500_Cb_RECV)(uint8_t* buf, uint8_t size, W5500_Socket* socket, W5500_Main_Struct* MS);
 
 // Тип функции для обработки прерывания отключения
-typedef void (*W5500_Cb_DISCON)(W5500_Socket* socket, W5500_User_Funcs* UF);
+typedef void (*W5500_Cb_DISCON)(W5500_Socket* socket, W5500_Main_Struct* MS);
 
 // Тип функции для обработки прерывания подключения
-typedef void (*W5500_Cb_CON)(W5500_Socket* socket, W5500_User_Funcs* UF);
+typedef void (*W5500_Cb_CON)(W5500_Socket* socket, W5500_Main_Struct* MS);
 
 typedef struct
 {
@@ -143,8 +145,7 @@ typedef struct
 } W5500_User_Callbacks;
 
 // Главная структура
-typedef struct
-{
+typedef struct W5500_Main_Struct {
     W5500_User_Funcs*     UF;
     W5500_User_Callbacks* UCb;
 
@@ -426,11 +427,11 @@ uint8_t W5500_SendData_IR(
 // оставшуюся часть через эту функцию
 // Возвращается размер данных в пакете
 uint16_t W5500_ReceiveData(
-    uint8_t           socket_num,
-    uint8_t*          buffer,
-    uint16_t          max_len,
-    uint16_t*         buffer_len,
-    W5500_User_Funcs* UF);
+    uint8_t            socket_num,
+    uint8_t*           buffer,
+    uint16_t           max_len,
+    uint16_t*          buffer_len,
+    W5500_Main_Struct* MS);
 
 // Сокет переходит в режим TCP Сервера
 //* Для выхода из режима закрйоте сокет
