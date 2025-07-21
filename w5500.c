@@ -989,7 +989,7 @@ uint16_t W5500_ReceiveData(
 
     // Обновляем указатель чтения
     rx_rd += len;
-    if (rx_rd > MS->UF->sockets[socket_num].rx_buf_size) {
+    if (rx_rd > MS->UF->sockets[socket_num].rx_buf_size * 1024) {
         rx_rd -= MS->UF->sockets[socket_num].rx_buf_size;
     }
     if (W5500_Set_Sn_RX_RD(socket_num, rx_rd, MS->UF) != 0)
