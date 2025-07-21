@@ -73,7 +73,7 @@
 #define W5500_TIMEOUT 0x8
 #define W5500_RECV    0x4
 #define W5500_DISCON  0x2
-#define W5500_CON     0x0
+#define W5500_CON     0x1
 
 typedef struct
 {
