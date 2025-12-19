@@ -1082,7 +1082,7 @@ uint8_t W5500_TCP_Disconnect(
 // Обработка прерываний сокетов
 void W5500_IR_processing(
     uint8_t*           buf,
-    uint8_t            size,
+    uint16_t           size,
     W5500_Main_Struct* MS)
 {
     uint8_t IR_byte;
