@@ -446,7 +446,7 @@ uint8_t W5500_TCP_Disconnect(
 // обрабатываются прерывания всех сокетов
 void W5500_IR_processing(
     uint8_t*           buf,
-    uint8_t            size,
+    uint16_t           size,
     W5500_Main_Struct* MS);
 
 #endif /* INC_W5500_H_ */
