@@ -125,7 +125,7 @@ typedef void (*W5500_Cb_SEND_OK)(W5500_Socket* socket, W5500_Main_Struct* MS);
 typedef void (*W5500_Cb_TIMEOUT)(W5500_Socket* socket, W5500_Main_Struct* MS);
 
 // Тип функции для обработки прерывания получения данных
-typedef void (*W5500_Cb_RECV)(uint8_t* buf, uint8_t size, W5500_Socket* socket, W5500_Main_Struct* MS);
+typedef void (*W5500_Cb_RECV)(uint8_t* buf, uint16_t size, W5500_Socket* socket, W5500_Main_Struct* MS);
 
 // Тип функции для обработки прерывания отключения
 typedef void (*W5500_Cb_DISCON)(W5500_Socket* socket, W5500_Main_Struct* MS);
